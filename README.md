@@ -24,7 +24,7 @@ docker compose -f docker-compose-db.yml up
 
 Run in development mode: 
 ```bash
-cd backend/SoliSYSTEMS/Max.Core.Api
+cd DSS2022.Api
 dotnet watch run
 ```
 
@@ -42,13 +42,4 @@ Update the database:
 ```bash
 cd DSS2022.Api
 dotnet ef database update
-```
-
-Initial Login:
-The first user created is 'admin@solisystems.com'. This user is inactive by default. 
-To activate the user, you must do the next steps.
-1. Run the backend.
-2. Make a PUT in Insomnia or Postman with the next url: <url_backend>/api/users/activate with the next JSON:
-```json
-    {"token": "TOKEN", "password": "Test123!"}
 ```

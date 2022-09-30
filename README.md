@@ -1,6 +1,6 @@
 # DSS 2022
 
-Trello board: 
+Trello board: https://trello.com/w/dsd2022
 
 
 ## Techonology Stack

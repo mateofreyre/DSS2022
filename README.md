@@ -41,5 +41,5 @@ dotnet ef migrations add <MigrationName>
 Update the database:
 ```bash
 cd DSS2022.Api
-dotnet ef database 
+dotnet ef database update
 ```

@@ -11,7 +11,7 @@ namespace DSS2022.Data
 {
     public class DSS2022DataContext : DbContext
     {
-        public DSS2022DataContext(DbContextOptions options) : base(options)
+        public DSS2022DataContext(DbContextOptions<DSS2022DataContext> options) : base(options)
         {
             //_contextService = contextService;
         }

@@ -16,10 +16,12 @@ namespace DSS2022.Data
         {
             _context = dSS2022DataContext;
             UserRepository = new UserRepository(dSS2022DataContext);
+            CollectionRepository = new CollectionRepository(dSS2022DataContext);
 
         }
 
         public IUserRepository UserRepository { get; private set; }
+        public ICollectionRepository CollectionRepository { get; private set; }
 
     }
 }

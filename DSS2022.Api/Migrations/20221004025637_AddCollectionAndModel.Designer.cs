@@ -4,6 +4,7 @@ using DSS2022.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,10 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace DSS2022.Api.Migrations
 {
     [DbContext(typeof(DSS2022DataContext))]
-    partial class DSS2022DataContextModelSnapshot : ModelSnapshot
+    [Migration("20221004025637_AddCollectionAndModel")]
+    partial class AddCollectionAndModel
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

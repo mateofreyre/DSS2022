@@ -9,7 +9,8 @@ namespace DSS2022.Data
 {
     public interface IUnitOfWork
     { 
-        IUserRepository UserRepository{ get; }
+        IUserRepository UserRepository { get; }
+        ICollectionRepository CollectionRepository { get; }
 
     }
 }

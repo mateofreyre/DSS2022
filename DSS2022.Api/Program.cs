@@ -20,8 +20,12 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 builder.Services.AddAutoMapper(Assembly.GetAssembly(typeof(AutoMapperProfile)));
 
-builder.Services.AddScoped<IUserService, UserService>();
+
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
+
+builder.Services.AddScoped<IUserService, UserService>();
+
+builder.Services.AddScoped<ICollectionService, CollectionService>();
 
 builder.Services.AddDbContext<DSS2022.Data.DSS2022DataContext>(options =>
                     options.UseSqlServer(

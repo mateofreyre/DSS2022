@@ -1,4 +1,6 @@
 ﻿using AutoMapper;
+using DSS2022.DataTransferObjects.Collection;
+using DSS2022.Model;
 
 namespace DSS2002.Api.Helpers
 {
@@ -6,7 +8,11 @@ namespace DSS2002.Api.Helpers
     {
         public AutoMapperProfile()
         {
-
+            #region Colletions   
+            CreateMap<Collection, CollectionDTO>();
+            CreateMap<CollectionDTO, Collection>();
+            CreateMap<CreateCollectionDTO, Collection>();
+            #endregion
         }
     }
 }

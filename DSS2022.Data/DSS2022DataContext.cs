@@ -17,6 +17,7 @@ namespace DSS2022.Data
         }
 
         public virtual DbSet<User> Users { get; set; }
+        public virtual DbSet<Collection> Collections { get; set; }
 
 
         /*public virtual DbSet<UserRole> UsersRoles { get; set; }
@@ -27,6 +28,7 @@ namespace DSS2022.Data
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.ApplyConfiguration(new UserConfiguration());
+            modelBuilder.ApplyConfiguration(new CollectionConfiguration());
 
             //modelBuilder.Seed();
 

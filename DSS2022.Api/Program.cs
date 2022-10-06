@@ -6,7 +6,7 @@ using System.Reflection;
 using DSS2022.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
-
+using System.Configuration;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -28,9 +28,8 @@ builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<ICollectionService, CollectionService>();
 
 builder.Services.AddDbContext<DSS2022.Data.DSS2022DataContext>(options =>
-                    options.UseSqlServer(
-                       builder.Configuration.GetConnectionString("DSS2022"),
-                        o => o.MigrationsAssembly("DSS2022.Api")));
+                    options.UseNpgsql(builder.Configuration.GetConnectionString("DSS2022"),
+                    b => b.MigrationsAssembly("DSS2022.Api")));
 
 var app = builder.Build();
 

@@ -33,6 +33,15 @@ builder.Services.AddDbContext<DSS2022.Data.DSS2022DataContext>(options =>
                     options.UseNpgsql(builder.Configuration.GetConnectionString("DSS2022"),
                     b => b.MigrationsAssembly("DSS2022.Api")));
 
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("CorsPolicy", builder => builder
+    .WithOrigins("http://localhost:3005")
+    .AllowAnyMethod()
+    .AllowAnyHeader()
+    .AllowCredentials());
+});
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -41,6 +50,8 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
+
+app.UseCors("CorsPolicy");
 
 app.UseHttpsRedirection();
 

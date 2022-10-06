@@ -1,5 +1,7 @@
 ﻿using AutoMapper;
 using DSS2022.DataTransferObjects.Collection;
+using DSS2022.DataTransferObjects.Model;
+using DSS2022.DataTransferObjects.ModelType;
 using DSS2022.Model;
 
 namespace DSS2002.Api.Helpers
@@ -13,6 +15,17 @@ namespace DSS2002.Api.Helpers
             CreateMap<CollectionDTO, Collection>();
             CreateMap<CreateCollectionDTO, Collection>();
             #endregion
+
+            #region Model
+            CreateMap<Model, ModelDTO>();
+            CreateMap<ModelDTO, Model>();
+            #endregion
+
+            #region Model Type
+            CreateMap<ModelType, ModelTypeDTO>();
+            CreateMap<ModelTypeDTO, ModelType>();
+            #endregion
+
         }
     }
 }

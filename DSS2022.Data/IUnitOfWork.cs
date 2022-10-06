@@ -11,6 +11,7 @@ namespace DSS2022.Data
     { 
         IUserRepository UserRepository { get; }
         ICollectionRepository CollectionRepository { get; }
+        Task<int> Complete();
 
     }
 }

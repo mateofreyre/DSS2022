@@ -28,6 +28,8 @@ namespace DSS2022.Business.Implementation
             var collection = _mapper.Map<Collection>(collectionCreateDTO);
             await _unitOfWork.CollectionRepository.AddAsync(collection);
 
+            await _unitOfWork.Complete();
+
             return collection;
         }
 

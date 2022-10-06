@@ -23,5 +23,10 @@ namespace DSS2022.Data
         public IUserRepository UserRepository { get; private set; }
         public ICollectionRepository CollectionRepository { get; private set; }
 
+        public Task<int> Complete()
+        {
+            return _context.SaveChangesAsync();
+        }
+
     }
 }

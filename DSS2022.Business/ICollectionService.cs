@@ -12,5 +12,6 @@ namespace DSS2022.Business
     {
         Task<CollectionDTO> GetByIdAsync(int id);
         Task<Collection> Create(CreateCollectionDTO dto);
+        Task<List<CollectionDTO>> GetAll();
     }
 }

@@ -24,6 +24,13 @@ namespace DSS2022.Api.Controllers
             return Ok(collection);
         }
 
+        [HttpGet("getAll")]
+        public async Task<IActionResult> GetAll()
+        {
+            var collection = await this._collectionService.GetAll();
+            return Ok(collection);
+        }
+
         [HttpPost]
         public async Task<IActionResult> Create(CreateCollectionDTO createCollectionDTO)
         {

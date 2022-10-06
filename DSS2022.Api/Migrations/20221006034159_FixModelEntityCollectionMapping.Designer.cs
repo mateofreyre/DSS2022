@@ -3,6 +3,7 @@ using System;
 using DSS2022.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,10 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace DSS2022.Api.Migrations
 {
     [DbContext(typeof(DSS2022DataContext))]
-    partial class DSS2022DataContextModelSnapshot : ModelSnapshot
+    [Migration("20221006034159_FixModelEntityCollectionMapping")]
+    partial class FixModelEntityCollectionMapping
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

@@ -6,4 +6,8 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\DSS2022.Model\DSS2022.Model.csproj" />
+  </ItemGroup>
+
 </Project>

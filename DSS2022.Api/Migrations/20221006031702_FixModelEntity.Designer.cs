@@ -3,6 +3,7 @@ using System;
 using DSS2022.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,10 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace DSS2022.Api.Migrations
 {
     [DbContext(typeof(DSS2022DataContext))]
-    partial class DSS2022DataContextModelSnapshot : ModelSnapshot
+    [Migration("20221006031702_FixModelEntity")]
+    partial class FixModelEntity
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -59,7 +61,7 @@ namespace DSS2022.Api.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
-                    b.Property<int>("CollectionId")
+                    b.Property<int?>("CollectionId")
                         .HasColumnType("integer");
 
                     b.Property<string>("Description")
@@ -100,13 +102,9 @@ namespace DSS2022.Api.Migrations
 
             modelBuilder.Entity("DSS2022.Model.Model", b =>
                 {
-                    b.HasOne("DSS2022.Model.Collection", "Collection")
+                    b.HasOne("DSS2022.Model.Collection", null)
                         .WithMany("Models")
-                        .HasForeignKey("CollectionId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Collection");
+                        .HasForeignKey("CollectionId");
                 });
 
             modelBuilder.Entity("DSS2022.Model.Collection", b =>

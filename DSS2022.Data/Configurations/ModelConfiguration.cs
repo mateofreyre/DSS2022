@@ -9,9 +9,9 @@ using System.Threading.Tasks;
 
 namespace DSS2022.Data.Configurations
 {
-    public class CollectionConfiguration : IEntityTypeConfiguration<Collection>
+    public class ModelConfiguration : IEntityTypeConfiguration<DSS2022.Model.Model>
     {
-        void IEntityTypeConfiguration<Collection>.Configure(EntityTypeBuilder<Collection> builder)
+        void IEntityTypeConfiguration<DSS2022.Model.Model>.Configure(EntityTypeBuilder<DSS2022.Model.Model> builder)
         {
             builder
                 .Property(a => a.Name)
@@ -22,10 +22,11 @@ namespace DSS2022.Data.Configurations
                 .HasMaxLength(200)
                 .IsRequired();
 
-            builder.Property(a => a.ReleaseDate)
-                .IsRequired();
+            builder
+                .HasOne<Collection>(x => x.Collection)
+                .WithMany(x => x.Models)
+                .HasForeignKey(x => x.CollectionId);
 
-            
 
         }
     }

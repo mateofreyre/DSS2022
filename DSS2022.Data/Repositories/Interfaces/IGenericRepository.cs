@@ -15,5 +15,6 @@ namespace DSS2022.Data.Repositories.Interfaces
         void Update(T entity);
         Task<T> ReadAsync(int id);
         T Read(int id);
+        Task<IEnumerable<T>> ReadAllAsync();
     }
 }

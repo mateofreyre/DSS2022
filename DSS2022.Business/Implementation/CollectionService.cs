@@ -40,5 +40,13 @@ namespace DSS2022.Business.Implementation
             var collectionDTO = _mapper.Map<CollectionDTO>(collection);
             return collectionDTO;
         }
+
+        public async Task<List<CollectionDTO>> GetAll()
+        {
+            var collectionList = await _unitOfWork.CollectionRepository.ReadAllAsync();
+
+            var collectionDTO = collectionList.ToList().Select(i => _mapper.Map<CollectionDTO>(i)).ToList();
+            return collectionDTO;
+        }
     }
 }

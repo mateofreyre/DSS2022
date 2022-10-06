@@ -55,5 +55,10 @@ namespace DSS2022.Data.Repositories
         {
             _context.Set<T>().Update(entity);
         }
+
+        public virtual async Task<IEnumerable<T>> ReadAllAsync()
+        {
+            return await _context.Set<T>().ToListAsync();
+        }
     }
 }

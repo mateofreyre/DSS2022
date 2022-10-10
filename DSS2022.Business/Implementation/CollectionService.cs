@@ -2,11 +2,6 @@
 using DSS2022.Data;
 using DSS2022.DataTransferObjects.Collection;
 using DSS2022.Model;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using DSS2022.Business.Helpers;
 
 namespace DSS2022.Business.Implementation
@@ -15,6 +10,7 @@ namespace DSS2022.Business.Implementation
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
+        private String bonitaUrl = "http://localhost:38169/bonita/";
 
 
         public CollectionService(IUnitOfWork unitOfWork,
@@ -61,14 +57,14 @@ namespace DSS2022.Business.Implementation
         public async Task<string> StartProcess(int id)
         {
             AuthenticationHelper authenticationHelper = new AuthenticationHelper();
-            var token = "";
-            token = await authenticationHelper.Login();
+            var token = "30f974db-c726-4e45-92b8-ab00277706d1";
+           // token = await authenticationHelper.Login();
 
-            token = token.Split("=")[1];
+           // token = token.Split("=")[1];
             var handler = new HttpClientHandler();
             using (var client = new HttpClient(handler))
             {
-                const string url = "http://localhost:8080/bonita/";
+                //const string url = "http://localhost:8080/bonita/";
 
                 var content = new FormUrlEncodedContent(new[]
                     {
@@ -76,11 +72,11 @@ namespace DSS2022.Business.Implementation
                     new KeyValuePair<string, string>("ticket_description", ""),
                     new KeyValuePair<string, string>("ticket_subject", "")
                 });
-                var uri = new Uri(url);
+                var uri = new Uri(bonitaUrl);
                 client.BaseAddress = uri;
 
                 client.DefaultRequestHeaders.Add("X-Bonita-API-Token", token);
-                HttpResponseMessage response = await client.PostAsync("API/bpm/process/"+id+"/instantiation", content);
+                HttpResponseMessage response = await client.PostAsync(bonitaUrl +"API/bpm/process/"+id+"/instantiation", content);
 
 
                 var pepe = true;
@@ -93,14 +89,14 @@ namespace DSS2022.Business.Implementation
         {
             AuthenticationHelper authenticationHelper = new AuthenticationHelper();
             var token = "";
-            token = await authenticationHelper.Login();
+           // token = await authenticationHelper.Login();
 
             token = token.Split("=")[1];
             var handler = new HttpClientHandler();
             using (var client = new HttpClient(handler))
             {
-                const string url = "http://localhost:8080/bonita/";
-                var uri = new Uri(url);
+               // const string url = "http://localhost:8080/bonita/";
+                var uri = new Uri(bonitaUrl);
                 client.BaseAddress = uri;
                 client.DefaultRequestHeaders.Add("X-Bonita-API-Token", token);
 

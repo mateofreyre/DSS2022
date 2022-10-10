@@ -1,8 +1,8 @@
-﻿using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using System.Net;
-using System.Web;
 using DSS2022.Business.Helpers;
+using DSS2022.DataTransferObjects.User;
+using Newtonsoft.Json.Linq;
 
 namespace DSS2022.Api.Controllers
 {
@@ -15,11 +15,16 @@ namespace DSS2022.Api.Controllers
             string sessionID;
 
         [HttpPost("login")]
-        public async Task<IActionResult> Login()
+        public async Task<IActionResult> Login(UserDTO userDTO)
         {
             AuthenticationHelper authenticationHelper = new AuthenticationHelper();
-            var loginStr = authenticationHelper.Login();
-            return Ok(loginStr);
+            var loginStr = await authenticationHelper.Login(userDTO);
+            if(loginStr != "") {
+                JObject res = new JObject( new JProperty("apiToken", loginStr));
+                return Ok(res.ToString());
+            }
+
+            return Unauthorized();
         }
 
         [HttpPost("logout")]

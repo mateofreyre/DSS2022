@@ -1,4 +1,5 @@
 ﻿using System.Net;
+using DSS2022.DataTransferObjects.User;
 
 namespace DSS2022.Business.Helpers
 {
@@ -8,10 +9,11 @@ namespace DSS2022.Business.Helpers
         string strCookietoPass;
         string sessionID;
 
-        public async Task<string> Login()
+        public async Task<string> Login(UserDTO userDto)
         {
 
-            const string url = "http://localhost:8080/bonita/";
+            const string bonitaUrl = "http://localhost:38169/bonita/";
+            //const string bonitaUrl = "http://localhost:8080/bonita/";
 
             var cookies = new CookieContainer();
             var handler = new HttpClientHandler();
@@ -19,18 +21,18 @@ namespace DSS2022.Business.Helpers
 
             using (var client = new HttpClient(handler))
             {
-                var uri = new Uri(url);
+                var uri = new Uri(bonitaUrl);
                 client.BaseAddress = uri;
                 //client.DefaultRequestHeaders.Accept.Clear();
                 //client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
 
                 var content = new FormUrlEncodedContent(new[]
                 {
-                    new KeyValuePair<string, string>("username", "walter.bates"),
-                    new KeyValuePair<string, string>("password", "bpm"),
+                    new KeyValuePair<string, string>("username", userDto.Email),
+                    new KeyValuePair<string, string>("password", userDto.Password),
                     new KeyValuePair<string, string>("redirect", "false"),
                     new KeyValuePair<string, string>("redirectUrl", ""),
-                    });
+                });
 
                 HttpResponseMessage response = await client.PostAsync("loginservice", content);
 
@@ -47,10 +49,10 @@ namespace DSS2022.Business.Helpers
                     collection = cookies.GetCookies(uri);
                     strCookietoPass = response.Headers.GetValues("Set-Cookie").FirstOrDefault();
 
-                    sessionID = collection["JSESSIONID"].ToString();
+                    sessionID = collection["X-Bonita-API-Token"].ToString();
 
                     Console.WriteLine(string.Format("Successful Login Retrieved session ID {0}", sessionID));
-                    return sessionID;
+                    return sessionID.Replace("X-Bonita-API-Token=","");
                     // Do useful work 
                 }
                 else

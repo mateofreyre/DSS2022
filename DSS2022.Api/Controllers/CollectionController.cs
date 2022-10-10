@@ -18,9 +18,9 @@ namespace DSS2022.Api.Controllers
         }
 
         [HttpGet("{id}")]
-        public async Task<IActionResult> Get(int id)
+        public async Task<IActionResult> Get(int id, string token)
         {
-            var collection = await this._collectionService.GetByIdAsync(id);
+            var collection = await this._collectionService.GetByIdAsync(id, token);
             return Ok(collection);
         }
 

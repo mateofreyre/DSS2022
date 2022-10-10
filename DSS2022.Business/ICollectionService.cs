@@ -10,7 +10,7 @@ namespace DSS2022.Business
 {
     public interface ICollectionService
     {
-        Task<CollectionDTO> GetByIdAsync(int id);
+        Task<CollectionDTO> GetByIdAsync(int id, string token);
         Task<Collection> Create(CreateCollectionDTO dto);
         Task<List<CollectionDTO>> GetAll();
     }

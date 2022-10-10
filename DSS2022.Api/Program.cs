@@ -7,6 +7,7 @@ using DSS2022.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using System.Configuration;
+using Microsoft.AspNetCore.Authentication.Cookies;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -33,6 +34,8 @@ builder.Services.AddDbContext<DSS2022.Data.DSS2022DataContext>(options =>
                     options.UseNpgsql(builder.Configuration.GetConnectionString("DSS2022"),
                     b => b.MigrationsAssembly("DSS2022.Api")));
 
+
+
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("CorsPolicy", builder => builder
@@ -54,6 +57,7 @@ if (app.Environment.IsDevelopment())
 app.UseCors("CorsPolicy");
 
 //app.UseHttpsRedirection();
+
 
 app.UseAuthorization();
 

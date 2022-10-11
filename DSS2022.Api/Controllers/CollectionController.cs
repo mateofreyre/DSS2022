@@ -12,6 +12,7 @@ namespace DSS2022.Api.Controllers
 
         private ICollectionService _collectionService;
 
+
         public CollectionController(ICollectionService collectionService)
         {
             _collectionService = collectionService;
@@ -34,6 +35,8 @@ namespace DSS2022.Api.Controllers
         [HttpPost]
         public async Task<IActionResult> Create(CreateCollectionDTO createCollectionDTO)
         {
+            string bonitaSessionId = this.HttpContext.Request.Cookies["session-id"];
+            string bonitaApiKey = this.HttpContext.Request.Cookies["api-token"];
             var collection = await this._collectionService.Create(createCollectionDTO);
             return Ok(collection);
         }

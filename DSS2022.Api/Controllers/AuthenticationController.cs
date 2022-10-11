@@ -19,9 +19,14 @@ namespace DSS2022.Api.Controllers
         {
             AuthenticationHelper authenticationHelper = new AuthenticationHelper();
             var loginStr = await authenticationHelper.Login(userDTO);
-            if(loginStr != "") {
-                JObject res = new JObject( new JProperty("apiToken", loginStr));
-                return Ok(res.ToString());
+            //return Ok(loginStr).Cookie;
+            CookieOptions cookieOptions = new CookieOptions();
+            cookieOptions.Domain = "localhost:3000";
+            if(loginStr.HasValues) {
+                HttpContext.Response.Cookies.Append("session-id", loginStr.GetValue("sessionId").ToString(), cookieOptions);
+                HttpContext.Response.Cookies.Append("api-token", loginStr.GetValue("apiToken").ToString(), cookieOptions);
+                JObject res = new JObject( new JProperty("credentials", loginStr));
+                return Ok(loginStr);
             }
 
             return Unauthorized();

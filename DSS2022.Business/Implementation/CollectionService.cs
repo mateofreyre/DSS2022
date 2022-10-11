@@ -57,7 +57,7 @@ namespace DSS2022.Business.Implementation
         public async Task<string> StartProcess(int id)
         {
             AuthenticationHelper authenticationHelper = new AuthenticationHelper();
-            var token = "30f974db-c726-4e45-92b8-ab00277706d1";
+            var token = "be047ffb-d222-4f5a-ae17-71f8d6e9e469";
            // token = await authenticationHelper.Login();
 
            // token = token.Split("=")[1];

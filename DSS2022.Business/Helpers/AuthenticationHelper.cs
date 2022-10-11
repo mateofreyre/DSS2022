@@ -1,5 +1,6 @@
 ﻿using System.Net;
 using DSS2022.DataTransferObjects.User;
+using Newtonsoft.Json.Linq;
 
 namespace DSS2022.Business.Helpers
 {
@@ -9,7 +10,7 @@ namespace DSS2022.Business.Helpers
         string strCookietoPass;
         string sessionID;
 
-        public async Task<string> Login(UserDTO userDto)
+        public async Task<JObject> Login(UserDTO userDto)
         {
 
             const string bonitaUrl = "http://localhost:38169/bonita/";
@@ -43,22 +44,26 @@ namespace DSS2022.Business.Helpers
                     if (!String.IsNullOrEmpty(responseBodyAsText))
                     {
                         Console.WriteLine("Unsuccessful Login.Bonita bundle may not have been started, or the URL is invalid.");
-                        return "";
+                        return  new JObject();
                     }
 
                     collection = cookies.GetCookies(uri);
                     strCookietoPass = response.Headers.GetValues("Set-Cookie").FirstOrDefault();
 
-                    sessionID = collection["X-Bonita-API-Token"].ToString();
+                    var apitoken = collection["X-Bonita-API-Token"].ToString();
+                    sessionID = collection["JSESSIONID"].ToString();
 
                     Console.WriteLine(string.Format("Successful Login Retrieved session ID {0}", sessionID));
-                    return sessionID.Replace("X-Bonita-API-Token=","");
+                    
+                    return new JObject(new JProperty("apiToken", apitoken.Replace("X-Bonita-API-Token=","")), new JProperty("sessionId", sessionID.Replace("JSESSIONID=","")));
+                    
+                   // return sessionID.Replace("X-Bonita-API-Token=","");
                     // Do useful work 
                 }
                 else
                 {
                     Console.WriteLine("Login Error" + (int)response.StatusCode + "," + response.ReasonPhrase);
-                    return "";
+                    return new JObject();
                 }
             }
         }

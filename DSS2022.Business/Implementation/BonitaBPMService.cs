@@ -21,13 +21,21 @@ public class BonitaBpmService: IBonitaBpmService
             client.BaseAddress = uri;
 
             this.AddBonitaCookie(cookieContainer, uri, token, sessionId);
-            
+            client.DefaultRequestHeaders.Add("X-Bonita-API-Token", token);
+
             JObject body = new JObject(new JProperty("processDefinitionId", processDefinitionId));
             var httpContent = new StringContent(body.ToString(), Encoding.UTF8, "application/json");
             
             
             HttpResponseMessage response = await client.PostAsync(BonitaUrl + "API/bpm/case", httpContent);
             
+            
+            if (response.IsSuccessStatusCode)
+            {
+                var responseBodyAsText = await response.Content.ReadAsStringAsync();
+                var jResult = JsonConvert.DeserializeObject<JArray>(responseBodyAsText);
+                return;
+            }
         }
 
     }

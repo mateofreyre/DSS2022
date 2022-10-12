@@ -29,7 +29,6 @@ public class BonitaBpmService: IBonitaBpmService
             
             HttpResponseMessage response = await client.PostAsync(BonitaUrl + "API/bpm/case", httpContent);
             
-            
             if (response.IsSuccessStatusCode)
             {
                 var responseBodyAsText = await response.Content.ReadAsStringAsync();
@@ -46,25 +45,34 @@ public class BonitaBpmService: IBonitaBpmService
         cookieContainer.Add(uri, new Cookie("JSESSIONID", sessionId));
     }
 
-    public async Task<string> StartProcess(string id, string token, string sessionId)
+    public async Task<string> StartProcess(Collection collection, string id, string token, string sessionId)
         {
        
-            var handler = new HttpClientHandler();
+            var cookieContainer = new CookieContainer();
+            using var handler = new HttpClientHandler() { CookieContainer = cookieContainer };
             using (var client = new HttpClient(handler))
             {
-         
-                var content = new FormUrlEncodedContent(new[]
-                    {
-                    new KeyValuePair<string, string>("ticket_account", ""),
-                    new KeyValuePair<string, string>("ticket_description", ""),
-                    new KeyValuePair<string, string>("ticket_subject", "")
-                });
+                JObject body = new JObject(
+                    new JProperty("name", collection.Name),
+                    new JProperty("description", collection.Description),
+                    new JProperty("releaseDate", collection.ReleaseDate.ToString())
+                );
+                var httpContent = new StringContent(body.ToString(), Encoding.UTF8, "application/json");
+                
                 var uri = new Uri(BonitaUrl);
                 client.BaseAddress = uri;
-
-          
-                HttpResponseMessage response = await client.PostAsync(BonitaUrl +"API/bpm/process/"+id+"/instantiation", content);
                 
+                AddBonitaCookie(cookieContainer, uri, token, sessionId);
+                client.DefaultRequestHeaders.Add("X-Bonita-API-Token", token);
+          
+                HttpResponseMessage response = await client.PostAsync(BonitaUrl +"API/bpm/process/"+id+"/instantiation", httpContent);
+
+                if (response.IsSuccessStatusCode)
+                {
+                    var responseBodyAsText = await response.Content.ReadAsStringAsync();
+                    var jResult = JsonConvert.DeserializeObject<JObject>(responseBodyAsText);
+                    return (string)jResult["caseId"];
+                }
 
                 return "";
             }

@@ -11,26 +11,29 @@ namespace DSS2022.Business.Implementation
         private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
         private String bonitaUrl = "http://localhost:38169/bonita/";
+        private IBonitaBpmService _bonitaBpmService;
 
 
-        public CollectionService(IUnitOfWork unitOfWork,
-                                 IMapper mapper)
+        public CollectionService(IUnitOfWork unitOfWork, IMapper mapper, IBonitaBpmService bonitaBpmService)
         {
             _unitOfWork = unitOfWork;
             _mapper = mapper;
+            _bonitaBpmService = bonitaBpmService;
         }
 
-        public async Task<Collection> Create(CreateCollectionDTO collectionCreateDTO)
+        public async Task<Collection> Create(CreateCollectionDTO collectionCreateDTO, string token, string sessionId)
         {
 
             var collection = _mapper.Map<Collection>(collectionCreateDTO);
             await _unitOfWork.CollectionRepository.AddAsync(collection);
 
-            await StartProcess(1);
+            var processId = await _bonitaBpmService.GetProcessId(token, sessionId);
+            //await _bonitaBpmService.StartProcess(processId, token, sessionId);
+            await _bonitaBpmService.CreateCase(collection, processId, token, sessionId);
 
-            await SetVariable(collection);
+            //await _bonitaBpmService.SetVariable(collection);
 
-            await _unitOfWork.Complete();
+            await  _unitOfWork.Complete();
 
             return collection;
         }
@@ -39,7 +42,7 @@ namespace DSS2022.Business.Implementation
         {
             var collection = await _unitOfWork.CollectionRepository.ReadAsync(id);
 
-            await StartProcess(1);
+          //  await _bonitaBpmService.StartProcess(1, token, ses);
 
             var collectionDTO = _mapper.Map<CollectionDTO>(collection);
             return collectionDTO;
@@ -52,71 +55,6 @@ namespace DSS2022.Business.Implementation
             var collectionDTO = collectionList.ToList().Select(i => _mapper.Map<CollectionDTO>(i)).ToList();
             return collectionDTO;
         }
-
-
-        public async Task<string> StartProcess(int id)
-        {
-            AuthenticationHelper authenticationHelper = new AuthenticationHelper();
-            var token = "be047ffb-d222-4f5a-ae17-71f8d6e9e469";
-           // token = await authenticationHelper.Login();
-
-           // token = token.Split("=")[1];
-            var handler = new HttpClientHandler();
-            using (var client = new HttpClient(handler))
-            {
-                //const string url = "http://localhost:8080/bonita/";
-
-                var content = new FormUrlEncodedContent(new[]
-                    {
-                    new KeyValuePair<string, string>("ticket_account", ""),
-                    new KeyValuePair<string, string>("ticket_description", ""),
-                    new KeyValuePair<string, string>("ticket_subject", "")
-                });
-                var uri = new Uri(bonitaUrl);
-                client.BaseAddress = uri;
-
-                client.DefaultRequestHeaders.Add("X-Bonita-API-Token", token);
-                HttpResponseMessage response = await client.PostAsync(bonitaUrl +"API/bpm/process/"+id+"/instantiation", content);
-
-
-                var pepe = true;
-
-                return "";
-            }
-        }
-
-        public async Task SetVariable(Collection collection)
-        {
-            AuthenticationHelper authenticationHelper = new AuthenticationHelper();
-            var token = "";
-           // token = await authenticationHelper.Login();
-
-            token = token.Split("=")[1];
-            var handler = new HttpClientHandler();
-            using (var client = new HttpClient(handler))
-            {
-               // const string url = "http://localhost:8080/bonita/";
-                var uri = new Uri(bonitaUrl);
-                client.BaseAddress = uri;
-                client.DefaultRequestHeaders.Add("X-Bonita-API-Token", token);
-
-
-                HttpResponseMessage responseTaskID = await client.GetAsync("/API/bpm/userTask/" + 1);
-
-                var content1 = new FormUrlEncodedContent(new[]
-                    {
-                    new KeyValuePair<string, string>("ticket_account", ""),
-                    new KeyValuePair<string, string>("ticket_description", ""),
-                    new KeyValuePair<string, string>("ticket_subject", "")
-                });
-
-                var taskId = 1;
-
-                HttpResponseMessage response = await client.GetAsync("/API/bpm/caseVariable/"+taskId+"/"+collection);
-
-                var pepe = true;
-            }
-
-        }
+        
     }
 }

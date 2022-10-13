@@ -10,7 +10,7 @@ public class BonitaBpmService: IBonitaBpmService
 {
     private const String BonitaUrl = "http://localhost:38169/bonita/";
 
-    public async Task CreateCase(Collection collection, string processDefinitionId , string token, string sessionId)
+    public async Task<string> CreateCase(Collection collection, string processDefinitionId , string token, string sessionId)
     {
      
         var cookieContainer = new CookieContainer();
@@ -23,7 +23,31 @@ public class BonitaBpmService: IBonitaBpmService
             this.AddBonitaCookie(cookieContainer, uri, token, sessionId);
             client.DefaultRequestHeaders.Add("X-Bonita-API-Token", token);
 
-            JObject body = new JObject(new JProperty("processDefinitionId", processDefinitionId));
+            JObject nameJson = new JObject(
+                new JProperty("name", "name"),
+                new JProperty("value", collection.Name));
+            
+            JObject descriptionJson = new JObject(
+                new JProperty("name", "description"),
+                new JProperty("value", collection.Description)); 
+            
+            JObject releaseDateJson = new JObject(
+                new JProperty("name", "releaseDate"),
+                new JProperty("value", collection.ReleaseDate.ToString("yyyy-MM-dd")));
+            
+            JObject manufacturingTimeJson = new JObject(
+                new JProperty("name", "manufacturingTime"),
+                new JProperty("value", collection.ManufacturingTime));
+
+
+            JArray collectionBody = new JArray();
+
+            collectionBody.Add(nameJson);
+            collectionBody.Add(descriptionJson);
+            collectionBody.Add(releaseDateJson);
+            collectionBody.Add(manufacturingTimeJson);
+            
+            JObject body = new JObject(new JProperty("processDefinitionId", processDefinitionId), new JProperty("variables", collectionBody));
             var httpContent = new StringContent(body.ToString(), Encoding.UTF8, "application/json");
             
             
@@ -33,10 +57,11 @@ public class BonitaBpmService: IBonitaBpmService
             {
                 var responseBodyAsText = await response.Content.ReadAsStringAsync();
                 var jResult = JsonConvert.DeserializeObject<JArray>(responseBodyAsText);
-                return;
+                return (string)jResult["caseId"];
             }
         }
 
+        return "";
     }
 
     private void AddBonitaCookie(CookieContainer cookieContainer, Uri uri, string token, string sessionId)
@@ -52,12 +77,14 @@ public class BonitaBpmService: IBonitaBpmService
             using var handler = new HttpClientHandler() { CookieContainer = cookieContainer };
             using (var client = new HttpClient(handler))
             {
-                JObject body = new JObject(
+                JObject contractBody = new JObject(
                     new JProperty("name", collection.Name),
                     new JProperty("description", collection.Description),
-                    new JProperty("releaseDate", collection.ReleaseDate.ToString())
+                    new JProperty("releaseDate", collection.ReleaseDate.ToString("yyyy-MM-dd")),
+                    new JProperty("manufacturingTime", collection.ManufacturingTime)
                 );
-                var httpContent = new StringContent(body.ToString(), Encoding.UTF8, "application/json");
+                JObject contract = new JObject(new JProperty("collection_contract", contractBody));
+                var httpContent = new StringContent(contractBody.ToString(), Encoding.UTF8, "application/json");
                 
                 var uri = new Uri(BonitaUrl);
                 client.BaseAddress = uri;
@@ -78,7 +105,7 @@ public class BonitaBpmService: IBonitaBpmService
             }
         }
 
-     public async Task SetVariable(Collection collection, string token, string sessionId)
+     public async Task SetVariable(Collection collection, string token, string sessionId, string caseId)
         {
             var handler = new HttpClientHandler();
             using (var client = new HttpClient(handler))
@@ -97,9 +124,7 @@ public class BonitaBpmService: IBonitaBpmService
                     new KeyValuePair<string, string>("ticket_subject", "")
                 });
 
-                var taskId = 1;
-
-                HttpResponseMessage response = await client.GetAsync("/API/bpm/caseVariable/"+taskId+"/"+collection);
+                HttpResponseMessage response = await client.GetAsync("/API/bpm/caseVariable/"+caseId+"/"+collection);
             }
 
         }

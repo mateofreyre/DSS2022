@@ -26,7 +26,8 @@ namespace DSS2022.Business.Implementation
             await _unitOfWork.CollectionRepository.AddAsync(collection);
 
             var processId = await _bonitaBpmService.GetProcessId(token, sessionId);
-            await _bonitaBpmService.StartProcess(collection, processId, token, sessionId);
+            //await _bonitaBpmService.StartProcess(collection, processId, token, sessionId);
+            await _bonitaBpmService.CreateCase(collection, processId, token, sessionId);
 
             await  _unitOfWork.Complete();
 

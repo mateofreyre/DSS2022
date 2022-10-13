@@ -11,11 +11,14 @@ namespace DSS2022.Api.Controllers
     {
 
         private ICollectionService _collectionService;
+        private IFileManagementService _fileManagementService;
 
 
-        public CollectionController(ICollectionService collectionService)
+        public CollectionController(ICollectionService collectionService,
+                                    IFileManagementService fileManagementService)
         {
             _collectionService = collectionService;
+            _fileManagementService = fileManagementService;
         }
 
         [HttpGet("{id}")]
@@ -39,6 +42,19 @@ namespace DSS2022.Api.Controllers
             var bonitaApiKey = this.HttpContext.Request.Cookies["api-token"];
             var collection = await this._collectionService.Create(createCollectionDTO, bonitaApiKey, bonitaSessionId);
             return Ok(collection);
+        }
+
+        [HttpPost("upload")]
+        public async Task<IActionResult> UploadFile(IFormFile file, string collectionName)
+        {
+            if (file == null || file.Length == 0)
+            {
+                return BadRequest("Please upload a file.");
+            }
+            var fileStream = file.OpenReadStream();
+            await this._fileManagementService.SaveFile(file.FileName, fileStream, "Collections\\"+collectionName+ "\\");
+            var result = $"The file {file.FileName} has been uploaded";
+            return Ok(result);
         }
     }
 }

@@ -32,6 +32,8 @@ builder.Services.AddScoped<ICollectionService, CollectionService>();
 
 builder.Services.AddScoped<IBonitaBpmService, BonitaBpmService>();
 
+builder.Services.AddScoped<IFileManagementService, FileManagementService>();
+
 builder.Services.AddDbContext<DSS2022.Data.DSS2022DataContext>(options =>
                     options.UseNpgsql(builder.Configuration.GetConnectionString("DSS2022"),
                     b => b.MigrationsAssembly("DSS2022.Api")));

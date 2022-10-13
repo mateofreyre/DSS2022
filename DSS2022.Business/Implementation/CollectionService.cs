@@ -36,7 +36,7 @@ namespace DSS2022.Business.Implementation
             return collection;
         }
 
-        public async Task<CollectionDTO> GetByIdAsync(int id)
+        public async Task<CollectionDTO> GetByIdAsync(int id, string token)
         {
             var collection = await _unitOfWork.CollectionRepository.ReadAsync(id);
 

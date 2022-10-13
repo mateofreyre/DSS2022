@@ -22,7 +22,7 @@ namespace DSS2022.Business.Implementation
             _bonitaBpmService = bonitaBpmService;
         }
 
-        public async Task<Collection> Create(CreateCollectionDTO collectionCreateDTO, string bonitaSessionId, string bonitaApiKey)
+        public async Task<Collection> Create(CreateCollectionDTO collectionCreateDTO,  string bonitaApiKey, string bonitaSessionId)
         {
 
             var collection = _mapper.Map<Collection>(collectionCreateDTO);

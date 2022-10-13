@@ -2,6 +2,9 @@
 using DSS2022.Data;
 using DSS2022.DataTransferObjects.Collection;
 using DSS2022.Model;
+using DSS2022.Business.Helpers;
+using Newtonsoft.Json;
+using System.Text.RegularExpressions;
 
 namespace DSS2022.Business.Implementation
 {
@@ -19,15 +22,15 @@ namespace DSS2022.Business.Implementation
             _bonitaBpmService = bonitaBpmService;
         }
 
-        public async Task<Collection> Create(CreateCollectionDTO collectionCreateDTO, string token, string sessionId)
+        public async Task<Collection> Create(CreateCollectionDTO collectionCreateDTO, string bonitaSessionId, string bonitaApiKey)
         {
 
             var collection = _mapper.Map<Collection>(collectionCreateDTO);
             await _unitOfWork.CollectionRepository.AddAsync(collection);
 
-            var processId = await _bonitaBpmService.GetProcessId(token, sessionId);
+            var processId = await _bonitaBpmService.GetProcessId(bonitaApiKey, bonitaSessionId);
             //await _bonitaBpmService.StartProcess(collection, processId, token, sessionId);
-            await _bonitaBpmService.CreateCase(collection, processId, token, sessionId);
+            await _bonitaBpmService.CreateCase(collection, processId, bonitaApiKey, bonitaSessionId);
 
             await  _unitOfWork.Complete();
 

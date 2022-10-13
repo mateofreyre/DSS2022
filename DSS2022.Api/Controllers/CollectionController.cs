@@ -38,6 +38,9 @@ namespace DSS2022.Api.Controllers
             string bonitaSessionId = this.HttpContext.Request.Cookies["session-id"];
             string bonitaApiKey = this.HttpContext.Request.Cookies["api-token"];
             var collection = await this._collectionService.Create(createCollectionDTO, bonitaSessionId, bonitaApiKey);
+            var bonitaSessionId = this.HttpContext.Request.Cookies["session-id"];
+            var bonitaApiKey = this.HttpContext.Request.Cookies["api-token"];
+            var collection = await this._collectionService.Create(createCollectionDTO, bonitaApiKey, bonitaSessionId);
             return Ok(collection);
         }
     }

@@ -21,7 +21,7 @@ namespace DSS2022.Api.Controllers
         [HttpGet("{id}")]
         public async Task<IActionResult> Get(int id, string token)
         {
-            var collection = await this._collectionService.GetByIdAsync(id, token);
+            var collection = await this._collectionService.GetByIdAsync(id);
             return Ok(collection);
         }
 
@@ -37,7 +37,7 @@ namespace DSS2022.Api.Controllers
         {
             string bonitaSessionId = this.HttpContext.Request.Cookies["session-id"];
             string bonitaApiKey = this.HttpContext.Request.Cookies["api-token"];
-            var collection = await this._collectionService.Create(createCollectionDTO);
+            var collection = await this._collectionService.Create(createCollectionDTO, bonitaSessionId, bonitaApiKey);
             return Ok(collection);
         }
     }

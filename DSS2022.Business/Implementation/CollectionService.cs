@@ -3,6 +3,8 @@ using DSS2022.Data;
 using DSS2022.DataTransferObjects.Collection;
 using DSS2022.Model;
 using DSS2022.Business.Helpers;
+using Newtonsoft.Json;
+using System.Text.RegularExpressions;
 
 namespace DSS2022.Business.Implementation
 {
@@ -10,7 +12,7 @@ namespace DSS2022.Business.Implementation
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
-        private String bonitaUrl = "http://localhost:38169/bonita/";
+        private String bonitaUrl = "http://localhost:8080/bonita/";
 
 
         public CollectionService(IUnitOfWork unitOfWork,
@@ -20,26 +22,25 @@ namespace DSS2022.Business.Implementation
             _mapper = mapper;
         }
 
-        public async Task<Collection> Create(CreateCollectionDTO collectionCreateDTO)
+        public async Task<Collection> Create(CreateCollectionDTO collectionCreateDTO, string bonitaSessionId, string bonitaApiKey)
         {
 
             var collection = _mapper.Map<Collection>(collectionCreateDTO);
             await _unitOfWork.CollectionRepository.AddAsync(collection);
 
-            await StartProcess(1);
+            await StartProcess(5483034383519259897, bonitaSessionId, bonitaApiKey);
 
-            await SetVariable(collection);
+            await SetVariable(collection, bonitaSessionId, bonitaApiKey);
 
             await _unitOfWork.Complete();
 
             return collection;
         }
 
-        public async Task<CollectionDTO> GetByIdAsync(int id, string token)
+        public async Task<CollectionDTO> GetByIdAsync(int id)
         {
             var collection = await _unitOfWork.CollectionRepository.ReadAsync(id);
 
-            await StartProcess(1);
 
             var collectionDTO = _mapper.Map<CollectionDTO>(collection);
             return collectionDTO;
@@ -54,13 +55,9 @@ namespace DSS2022.Business.Implementation
         }
 
 
-        public async Task<string> StartProcess(int id)
+        public async Task<string> StartProcess(long id, string bonitaSessionId, string bonitaApiKey)
         {
-            AuthenticationHelper authenticationHelper = new AuthenticationHelper();
-            var token = "be047ffb-d222-4f5a-ae17-71f8d6e9e469";
-           // token = await authenticationHelper.Login();
 
-           // token = token.Split("=")[1];
             var handler = new HttpClientHandler();
             using (var client = new HttpClient(handler))
             {
@@ -75,8 +72,24 @@ namespace DSS2022.Business.Implementation
                 var uri = new Uri(bonitaUrl);
                 client.BaseAddress = uri;
 
-                client.DefaultRequestHeaders.Add("X-Bonita-API-Token", token);
-                HttpResponseMessage response = await client.PostAsync(bonitaUrl +"API/bpm/process/"+id+"/instantiation", content);
+                client.DefaultRequestHeaders.Add("X-Bonita-API-Token", bonitaApiKey);
+                client.DefaultRequestHeaders.Add("JSESSIONID", bonitaSessionId);
+
+                var cookie = "JSESSIONID=" + bonitaSessionId + ";"+ "X-Bonita-API-Token=" + bonitaApiKey;
+                client.DefaultRequestHeaders.Add("Cookie", cookie);
+
+
+                HttpResponseMessage response = await client.GetAsync(bonitaUrl + "API/bpm/process?f=name=Elaboración de lentes");
+
+                var responseBodyAsText = await response.Content.ReadAsStringAsync();
+
+                var separado = responseBodyAsText.Split(",");
+                var processIdField = separado[6];
+                var precessId = Regex.Match(processIdField, @"\d+").Value;
+
+
+
+                HttpResponseMessage otraresponse = await client.PostAsync(bonitaUrl +"API/bpm/process/"+ precessId+"/instantiation", null);
 
 
                 var pepe = true;
@@ -85,20 +98,22 @@ namespace DSS2022.Business.Implementation
             }
         }
 
-        public async Task SetVariable(Collection collection)
+        public async Task SetVariable(Collection collection, string bonitaSessionId, string bonitaApiKey)
         {
             AuthenticationHelper authenticationHelper = new AuthenticationHelper();
-            var token = "";
-           // token = await authenticationHelper.Login();
 
-            token = token.Split("=")[1];
             var handler = new HttpClientHandler();
             using (var client = new HttpClient(handler))
             {
                // const string url = "http://localhost:8080/bonita/";
                 var uri = new Uri(bonitaUrl);
                 client.BaseAddress = uri;
-                client.DefaultRequestHeaders.Add("X-Bonita-API-Token", token);
+
+                client.DefaultRequestHeaders.Add("X-Bonita-API-Token", bonitaApiKey);
+                client.DefaultRequestHeaders.Add("JSESSIONID", bonitaSessionId);
+
+                var cookie = "JSESSIONID=" + bonitaSessionId + ";" + "X-Bonita-API-Token=" + bonitaApiKey;
+                client.DefaultRequestHeaders.Add("Cookie", cookie);
 
 
                 HttpResponseMessage responseTaskID = await client.GetAsync("/API/bpm/userTask/" + 1);

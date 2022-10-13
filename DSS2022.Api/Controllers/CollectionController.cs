@@ -45,15 +45,20 @@ namespace DSS2022.Api.Controllers
         }
 
         [HttpPost("upload")]
-        public async Task<IActionResult> UploadFile(IFormFile file, string collectionName)
+        public async Task<IActionResult> UploadFile(List<IFormFile> files, string collectionName)
         {
-            if (file == null || file.Length == 0)
+            var fileNames = new List<string>();
+            foreach (var file in files)
             {
-                return BadRequest("Please upload a file.");
+                if (file == null || file.Length == 0)
+                {
+                    return BadRequest("Please upload a file.");
+                }
+                var fileStream = file.OpenReadStream();
+                await this._fileManagementService.SaveFile(file.FileName, fileStream, "Collections\\"+collectionName+ "\\");
+                fileNames.Add(file.FileName);
             }
-            var fileStream = file.OpenReadStream();
-            await this._fileManagementService.SaveFile(file.FileName, fileStream, "Collections\\"+collectionName+ "\\");
-            var result = $"The file {file.FileName} has been uploaded";
+            var result = $"The files {string.Join(",",fileNames)} has been uploaded";
             return Ok(result);
         }
     }

@@ -45,7 +45,7 @@ namespace DSS2022.Api.Controllers
         }
 
         [HttpPost("upload")]
-       public async Task<IActionResult> UploadFile([FromForm] List<IFormFile> files, long collectionId)
+       public async Task<IActionResult> UploadFile([FromForm] List<IFormFile> files,[FromForm] long collectionId = 1)
        {
             var fileNames = new List<string>();
             foreach (var file in files)
@@ -55,7 +55,7 @@ namespace DSS2022.Api.Controllers
                     return BadRequest("Please upload a file.");
                 }
                 var fileStream = file.OpenReadStream();
-                await this._fileManagementService.SaveFile(file.FileName, fileStream, "Collections\\"+collectionId+ "\\");
+                await this._fileManagementService.SaveFile(file.FileName, fileStream, "..Files/Collections/"+collectionId);
                 fileNames.Add(file.FileName);
             }
             var result = $"The files {string.Join(",",fileNames)} has been uploaded";

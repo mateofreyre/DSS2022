@@ -56,7 +56,7 @@ public class BonitaBpmService: IBonitaBpmService
             if (response.IsSuccessStatusCode)
             {
                 var responseBodyAsText = await response.Content.ReadAsStringAsync();
-                var jResult = JsonConvert.DeserializeObject<JArray>(responseBodyAsText);
+                var jResult = JsonConvert.DeserializeObject<JObject>(responseBodyAsText);
                 return (string)jResult["caseId"];
             }
         }

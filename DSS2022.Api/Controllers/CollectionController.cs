@@ -36,7 +36,7 @@ namespace DSS2022.Api.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> Create(CreateCollectionDTO createCollectionDTO, List<IFormFile> files)
+        public async Task<IActionResult> Create(CreateCollectionDTO createCollectionDTO)
         {
             var bonitaSessionId = this.HttpContext.Request.Cookies["session-id"];
             var bonitaApiKey = this.HttpContext.Request.Cookies["api-token"];
@@ -45,17 +45,17 @@ namespace DSS2022.Api.Controllers
         }
 
         [HttpPost("upload")]
-        public async Task<IActionResult> UploadFile([FromForm] List<IFormFile> images, string collectionName = "nueva")
-        {
+       public async Task<IActionResult> UploadFile([FromForm] List<IFormFile> files, long collectionId)
+       {
             var fileNames = new List<string>();
-            foreach (var file in images)
+            foreach (var file in files)
             {
                 if (file == null || file.Length == 0)
                 {
                     return BadRequest("Please upload a file.");
                 }
                 var fileStream = file.OpenReadStream();
-                await this._fileManagementService.SaveFile(file.FileName, fileStream, "Collections\\"+collectionName+ "\\");
+                await this._fileManagementService.SaveFile(file.FileName, fileStream, "Collections\\"+collectionId+ "\\");
                 fileNames.Add(file.FileName);
             }
             var result = $"The files {string.Join(",",fileNames)} has been uploaded";

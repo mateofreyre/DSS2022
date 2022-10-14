@@ -2,10 +2,6 @@
 using DSS2022.Data;
 using DSS2022.DataTransferObjects.Collection;
 using DSS2022.Model;
-using DSS2022.Business.Helpers;
-using Newtonsoft.Json;
-using System.Text.RegularExpressions;
-
 namespace DSS2022.Business.Implementation
 {
     public class CollectionService : ICollectionService
@@ -54,6 +50,5 @@ namespace DSS2022.Business.Implementation
             var collectionDTO = collectionList.ToList().Select(i => _mapper.Map<CollectionDTO>(i)).ToList();
             return collectionDTO;
         }
-        
     }
 }

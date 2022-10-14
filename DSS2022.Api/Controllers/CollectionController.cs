@@ -36,7 +36,7 @@ namespace DSS2022.Api.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> Create(CreateCollectionDTO createCollectionDTO)
+        public async Task<IActionResult> Create(CreateCollectionDTO createCollectionDTO, List<IFormFile> files)
         {
             var bonitaSessionId = this.HttpContext.Request.Cookies["session-id"];
             var bonitaApiKey = this.HttpContext.Request.Cookies["api-token"];
@@ -45,10 +45,10 @@ namespace DSS2022.Api.Controllers
         }
 
         [HttpPost("upload")]
-        public async Task<IActionResult> UploadFile(List<IFormFile> files, string collectionName)
+        public async Task<IActionResult> UploadFile([FromForm] List<IFormFile> images, string collectionName = "nueva")
         {
             var fileNames = new List<string>();
-            foreach (var file in files)
+            foreach (var file in images)
             {
                 if (file == null || file.Length == 0)
                 {

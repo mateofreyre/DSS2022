@@ -9,12 +9,12 @@ namespace DSS2022.Business.Helpers
         private CookieCollection collection;
         string strCookietoPass;
         string sessionID;
+        
+        const string bonitaUrl = "http://localhost:38169/bonita/";
+        //const string bonitaUrl = "http://localhost:8080/bonita/";
 
         public async Task<JObject> Login(UserDTO userDto)
         {
-
-            //const string bonitaUrl = "http://localhost:38169/bonita/";
-            const string bonitaUrl = "http://localhost:8080/bonita/";
 
             var cookies = new CookieContainer();
             var handler = new HttpClientHandler();
@@ -64,6 +64,36 @@ namespace DSS2022.Business.Helpers
                 {
                     Console.WriteLine("Login Error" + (int)response.StatusCode + "," + response.ReasonPhrase);
                     return new JObject();
+                }
+            }
+        }
+        
+         public async void Logout(string token, string sessionId)
+        {
+            var cookies = new CookieContainer();
+
+            var cookieContainer = new CookieContainer();
+            using var handler = new HttpClientHandler() { CookieContainer = cookieContainer };
+            handler.CookieContainer = cookies;
+            using (var client = new HttpClient(handler))
+            {
+                var uri = new Uri(bonitaUrl);
+                client.BaseAddress = uri;
+                
+                cookieContainer.Add(uri, new Cookie("X-Bonita-API-Token", token));
+                cookieContainer.Add(uri, new Cookie("JSESSIONID", sessionId));
+                
+                client.DefaultRequestHeaders.Add("X-Bonita-API-Token", token);
+
+                HttpResponseMessage response = await client.GetAsync("logoutservice");
+
+                if (response.IsSuccessStatusCode)
+                {
+                    var responseBodyAsText = await response.Content.ReadAsStringAsync();
+                }
+                else
+                {
+                    Console.WriteLine("Login Error" + (int)response.StatusCode + "," + response.ReasonPhrase);
                 }
             }
         }

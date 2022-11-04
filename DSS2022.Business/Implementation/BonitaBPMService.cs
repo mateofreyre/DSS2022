@@ -145,14 +145,63 @@ public class BonitaBpmService: IBonitaBpmService
 
              if (response.IsSuccessStatusCode)
              {
-                 var responseBodyAsText = await response.Content.ReadAsStringAsync();
-                 var jResult = JsonConvert.DeserializeObject<JArray>(responseBodyAsText);
-                 var processDefinitionId = jResult[0].Value<string>("id");
-
-                 return processDefinitionId;
+                 var jResult = await GetJsonResponse(response);
+                 return jResult[0].Value<string>("id");
              }
 
              return "";
          }
+     }
+     
+     public async Task<string> GetUserId(string token, string sessionId, string userName)
+     {
+         var cookieContainer = new CookieContainer();
+         using var handler = new HttpClientHandler() { CookieContainer = cookieContainer };
+         using (var client = new HttpClient(handler))
+         {
+             var uri = new Uri(BonitaUrl);
+             client.BaseAddress = uri;
+
+             this.AddBonitaCookie(cookieContainer, uri, token, sessionId);
+
+             HttpResponseMessage response = await client.GetAsync(BonitaUrl + "API/identity/user?o=userName&s="+userName);
+
+             if (response.IsSuccessStatusCode)
+             {
+                 var jResult = await GetJsonResponse(response);
+                 return jResult[0].Value<string>("id");
+             }
+
+             return "";
+         }
+     }
+     
+     public async Task<string> GetGroupId(string token, string sessionId, string userId)
+     {
+         var cookieContainer = new CookieContainer();
+         using var handler = new HttpClientHandler() { CookieContainer = cookieContainer };
+         using (var client = new HttpClient(handler))
+         {
+             var uri = new Uri(BonitaUrl);
+             client.BaseAddress = uri;
+
+             this.AddBonitaCookie(cookieContainer, uri, token, sessionId);
+
+             HttpResponseMessage response = await client.GetAsync(BonitaUrl + "API/identity/membership?f=user_id="+userId+"&d=role_id");
+
+             if (response.IsSuccessStatusCode)
+             {
+                 var jResult = await GetJsonResponse(response);
+                 return jResult[0].Value<string>("group_id");
+             }
+
+             return "";
+         }
+     }
+
+     private async Task<JArray> GetJsonResponse(HttpResponseMessage response)
+     {
+         var responseBodyAsText = await response.Content.ReadAsStringAsync();
+         return JsonConvert.DeserializeObject<JArray>(responseBodyAsText);
      }
 }

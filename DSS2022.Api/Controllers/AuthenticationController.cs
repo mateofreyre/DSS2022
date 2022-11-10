@@ -13,13 +13,15 @@ namespace DSS2022.Api.Controllers
     {
         private CookieCollection collection;
         private IBonitaBpmService _bonitaBpmService;
+        private IProviderService _providerService;
 
-        string strCookietoPass;
-        string sessionID;
-
-        public AuthenticationController(IBonitaBpmService bonitaBpmService)
+        private const String ProviderUser = "luismiguel@gmail.com";
+        private const String ProviderPwd = "123abc";
+        
+        public AuthenticationController(IBonitaBpmService bonitaBpmService, IProviderService providerService)
         {
             _bonitaBpmService = bonitaBpmService;
+            _providerService = providerService;
         }
 
         [HttpPost("login")]
@@ -36,13 +38,17 @@ namespace DSS2022.Api.Controllers
 
                 string userId = await _bonitaBpmService.GetUserId(apiToken, sessionId, userDTO.Email);
                 string groupId = await _bonitaBpmService.GetGroupId(apiToken, sessionId, userId);
+                String providerToken = await _providerService.Auth(ProviderUser, ProviderPwd);
 
                 HttpContext.Response.Cookies.Append("session-id", sessionId, cookieOptions);
                 HttpContext.Response.Cookies.Append("api-token", apiToken, cookieOptions);
+                HttpContext.Response.Cookies.Append("provider-token", providerToken, cookieOptions);
                 JObject res = new JObject(
+                    new JProperty("name", userDTO.Email),
                     new JProperty("sessionId", sessionId),
                     new JProperty("apiToken", apiToken),
-                    new JProperty("groupId", groupId)
+                    new JProperty("groupId", groupId),
+                    new JProperty("providerToken", providerToken)
                 );
                 return Ok(res);
             }

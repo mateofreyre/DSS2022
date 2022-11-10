@@ -1,6 +1,8 @@
 ﻿using System.Net;
+using DSS2022.Api.Exceptions;
 using DSS2022.DataTransferObjects.User;
 using Newtonsoft.Json.Linq;
+
 
 namespace DSS2022.Business.Helpers
 {
@@ -9,66 +11,78 @@ namespace DSS2022.Business.Helpers
         private CookieCollection collection;
         string strCookietoPass;
         string sessionID;
+        private readonly Uri _uri = new Uri(bonitaUrl);
         
         const string bonitaUrl = "http://localhost:38169/bonita/";
         //const string bonitaUrl = "http://localhost:8080/bonita/";
 
         public async Task<JObject> Login(UserDTO userDto)
         {
-
             var cookies = new CookieContainer();
             var handler = new HttpClientHandler();
             handler.CookieContainer = cookies;
 
             using (var client = new HttpClient(handler))
             {
-                var uri = new Uri(bonitaUrl);
-                client.BaseAddress = uri;
-                //client.DefaultRequestHeaders.Accept.Clear();
-                //client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+                client.BaseAddress = _uri;
 
-                var content = new FormUrlEncodedContent(new[]
-                {
-                    new KeyValuePair<string, string>("username", userDto.Email),
-                    new KeyValuePair<string, string>("password", userDto.Password),
-                    new KeyValuePair<string, string>("redirect", "false"),
-                    new KeyValuePair<string, string>("redirectUrl", ""),
-                });
+                try {
+                    HttpResponseMessage response = await client.PostAsync("loginservice", BuildFormUrlEncodedParams(userDto.Email, userDto.Password));
+                    
+                    if (!response.IsSuccessStatusCode)
+                    {
+                        Console.WriteLine("Login Error" + (int)response.StatusCode + "," + response.ReasonPhrase);
+                        return new JObject();
+                    }
 
-                HttpResponseMessage response = await client.PostAsync("loginservice", content);
 
-                if (response.IsSuccessStatusCode)
-                {
                     var responseBodyAsText = await response.Content.ReadAsStringAsync();
 
                     if (!String.IsNullOrEmpty(responseBodyAsText))
                     {
                         Console.WriteLine("Unsuccessful Login.Bonita bundle may not have been started, or the URL is invalid.");
-                        return  new JObject();
+                        return new JObject();
                     }
 
-                    collection = cookies.GetCookies(uri);
-                    strCookietoPass = response.Headers.GetValues("Set-Cookie").FirstOrDefault();
+                    return GetCredentialsFromCookie(cookies, response);
 
-                    var apitoken = collection["X-Bonita-API-Token"].ToString();
-                    sessionID = collection["JSESSIONID"].ToString();
 
-                    Console.WriteLine(string.Format("Successful Login Retrieved session ID {0}", sessionID));
-                    
-                    return new JObject(new JProperty("apiToken", apitoken.Replace("X-Bonita-API-Token=","")), new JProperty("sessionId", sessionID.Replace("JSESSIONID=","")));
-                    
-                   // return sessionID.Replace("X-Bonita-API-Token=","");
-                    // Do useful work 
-                }
-                else
+                } catch (HttpRequestException e)
                 {
-                    Console.WriteLine("Login Error" + (int)response.StatusCode + "," + response.ReasonPhrase);
-                    return new JObject();
+                    throw new BonitaConnectionException("Error connecting to BonitaBPM");
                 }
             }
         }
-        
-         public async void Logout(string token, string sessionId)
+
+        private JObject GetCredentialsFromCookie(CookieContainer cookies, HttpResponseMessage response)
+        {
+            collection = cookies.GetCookies(_uri);
+            strCookietoPass = response.Headers.GetValues("Set-Cookie").FirstOrDefault();
+
+            var apitoken = collection["X-Bonita-API-Token"].ToString();
+            sessionID = collection["JSESSIONID"].ToString();
+
+            Console.WriteLine("Successful Login Retrieved session ID {0}", sessionID);
+
+            return new JObject(
+                new JProperty("apiToken", apitoken.Replace("X-Bonita-API-Token=", "")),
+                new JProperty("sessionId", sessionID.Replace("JSESSIONID=", ""))
+            );
+
+        }
+
+        private FormUrlEncodedContent BuildFormUrlEncodedParams(String user, string pwd)
+        {
+            return new FormUrlEncodedContent(new[]
+            {
+                new KeyValuePair<string, string>("username", user),
+                new KeyValuePair<string, string>("password", pwd),
+                new KeyValuePair<string, string>("redirect", "false"),
+                new KeyValuePair<string, string>("redirectUrl", ""),
+            });
+        }
+
+        public async void Logout(string token, string sessionId)
         {
             var cookies = new CookieContainer();
 
@@ -77,11 +91,10 @@ namespace DSS2022.Business.Helpers
             handler.CookieContainer = cookies;
             using (var client = new HttpClient(handler))
             {
-                var uri = new Uri(bonitaUrl);
-                client.BaseAddress = uri;
+                client.BaseAddress = _uri;
                 
-                cookieContainer.Add(uri, new Cookie("X-Bonita-API-Token", token));
-                cookieContainer.Add(uri, new Cookie("JSESSIONID", sessionId));
+                cookieContainer.Add(_uri, new Cookie("X-Bonita-API-Token", token));
+                cookieContainer.Add(_uri, new Cookie("JSESSIONID", sessionId));
                 
                 client.DefaultRequestHeaders.Add("X-Bonita-API-Token", token);
 

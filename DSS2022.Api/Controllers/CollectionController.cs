@@ -1,4 +1,5 @@
-﻿using DSS2022.Business;
+﻿using System.Security.Authentication;
+using DSS2022.Business;
 using DSS2022.DataTransferObjects.Collection;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -38,10 +39,18 @@ namespace DSS2022.Api.Controllers
         [HttpPost]
         public async Task<IActionResult> Create(CreateCollectionDTO createCollectionDTO)
         {
-            var bonitaSessionId = this.HttpContext.Request.Cookies["session-id"];
-            var bonitaApiKey = this.HttpContext.Request.Cookies["api-token"];
-            var collection = await this._collectionService.Create(createCollectionDTO, bonitaApiKey, bonitaSessionId);
-            return Ok(collection);
+            try
+            {
+                var bonitaSessionId = this.HttpContext.Request.Cookies["session-id"];
+                var bonitaApiKey = this.HttpContext.Request.Cookies["api-token"];
+                var collection = await this._collectionService.Create(createCollectionDTO, bonitaApiKey, bonitaSessionId);
+                return Ok(collection);
+            }
+            catch (InvalidCredentialException e)
+            {
+                return Unauthorized(e.Message);
+            }
+            
         }
 
         [HttpPost("upload")]
@@ -55,7 +64,7 @@ namespace DSS2022.Api.Controllers
                     return BadRequest("Please upload a file.");
                 }
                 var fileStream = file.OpenReadStream();
-                await this._fileManagementService.SaveFile(file.FileName, fileStream, "..Files/Collections/"+collectionId);
+                await this._fileManagementService.SaveFile(file.FileName, fileStream, "../Files/Collections/"+collectionId);
                 fileNames.Add(file.FileName);
             }
             var result = $"The files {string.Join(",",fileNames)} has been uploaded";

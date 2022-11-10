@@ -1,5 +1,8 @@
 using System.Net;
+using System.Security.Authentication;
 using System.Text;
+using Castle.Core.Internal;
+using DSS2022.Api.Exceptions;
 using DSS2022.Model;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -10,9 +13,18 @@ public class BonitaBpmService: IBonitaBpmService
 {
     private const String BonitaUrl = "http://localhost:38169/bonita/";
 
+    private void CheckBonitaCredentials(string token, string sessionId)
+    {
+        if (token.IsNullOrEmpty() || sessionId.IsNullOrEmpty())
+        {
+            throw new InvalidCredentialException("Bonita credentials are missing ");
+        }
+    }
+
     public async Task<string> CreateCase(Collection collection, string processDefinitionId , string token, string sessionId)
     {
-     
+        CheckBonitaCredentials(token, sessionId);
+        
         var cookieContainer = new CookieContainer();
         using var handler = new HttpClientHandler() { CookieContainer = cookieContainer };
         using (var client = new HttpClient(handler))
@@ -49,16 +61,17 @@ public class BonitaBpmService: IBonitaBpmService
             
             JObject body = new JObject(new JProperty("processDefinitionId", processDefinitionId), new JProperty("variables", collectionBody));
             var httpContent = new StringContent(body.ToString(), Encoding.UTF8, "application/json");
-            
-            
-            HttpResponseMessage response = await client.PostAsync(BonitaUrl + "API/bpm/case", httpContent);
-            
-            if (response.IsSuccessStatusCode)
+
+            try
             {
-                var responseBodyAsText = await response.Content.ReadAsStringAsync();
-                var jResult = JsonConvert.DeserializeObject<JObject>(responseBodyAsText);
-                return (string)jResult["caseId"];
+                HttpResponseMessage response = await client.PostAsync(BonitaUrl + "API/bpm/case", httpContent);
+                return await GetStringResponse(response, "caseId");
             }
+            catch (HttpRequestException e)
+            {
+                throw new BonitaConnectionException("Error connecting to BonitaBPM");
+            }
+
         }
 
         return "";
@@ -93,15 +106,7 @@ public class BonitaBpmService: IBonitaBpmService
                 client.DefaultRequestHeaders.Add("X-Bonita-API-Token", token);
           
                 HttpResponseMessage response = await client.PostAsync(BonitaUrl +"API/bpm/process/"+id+"/instantiation", httpContent);
-
-                if (response.IsSuccessStatusCode)
-                {
-                    var responseBodyAsText = await response.Content.ReadAsStringAsync();
-                    var jResult = JsonConvert.DeserializeObject<JObject>(responseBodyAsText);
-                    return (string)jResult["caseId"];
-                }
-
-                return "";
+                return await GetStringResponse(response, "caseId");
             }
         }
 
@@ -131,6 +136,8 @@ public class BonitaBpmService: IBonitaBpmService
 
      public async Task<string> GetProcessId(string token, string sessionId)
      {
+         CheckBonitaCredentials(token, sessionId);
+
          var processName = "Elaboración de lentes";
          var cookieContainer = new CookieContainer();
          using var handler = new HttpClientHandler() { CookieContainer = cookieContainer };
@@ -139,15 +146,18 @@ public class BonitaBpmService: IBonitaBpmService
              var uri = new Uri(BonitaUrl);
              client.BaseAddress = uri;
 
-             this.AddBonitaCookie(cookieContainer, uri, token, sessionId);
+             AddBonitaCookie(cookieContainer, uri, token, sessionId);
 
-             HttpResponseMessage response = await client.GetAsync(BonitaUrl + "API/bpm/process?f=name="+processName+"&p=0&c=1&f=activationState=ENABLED");
-
-             if (response.IsSuccessStatusCode)
+             try
              {
-                 var jResult = await GetJsonResponse(response);
-                 return jResult[0].Value<string>("id");
+                 HttpResponseMessage response = await client.GetAsync(BonitaUrl + "API/bpm/process?f=name="+processName+"&p=0&c=1&f=activationState=ENABLED");
+                 return await GetGetStringResponseStringResponse(response, "id");
+             } catch (HttpRequestException e)
+             {
+                 throw new BonitaConnectionException("Error connecting to Bonita");
+                 
              }
+           
 
              return "";
          }
@@ -188,20 +198,36 @@ public class BonitaBpmService: IBonitaBpmService
              this.AddBonitaCookie(cookieContainer, uri, token, sessionId);
 
              HttpResponseMessage response = await client.GetAsync(BonitaUrl + "API/identity/membership?f=user_id="+userId+"&d=role_id");
-
-             if (response.IsSuccessStatusCode)
-             {
-                 var jResult = await GetJsonResponse(response);
-                 return jResult[0].Value<string>("group_id");
-             }
-
-             return "";
+             return await GetGetStringResponseStringResponse(response, "group_id");
          }
+     }
+
+     private async Task<string> GetGetStringResponseStringResponse(HttpResponseMessage response, string field)
+     {
+         if (response.IsSuccessStatusCode)
+         {
+             var jResult = await GetJsonResponse(response);
+             return jResult[0].Value<string>(field);
+         }
+         
+         return "";
      }
 
      private async Task<JArray> GetJsonResponse(HttpResponseMessage response)
      {
          var responseBodyAsText = await response.Content.ReadAsStringAsync();
          return JsonConvert.DeserializeObject<JArray>(responseBodyAsText);
+     }
+     
+     private async Task<String> GetStringResponse(HttpResponseMessage response, string field)
+     {
+         if (response.IsSuccessStatusCode)
+         {
+             var responseBodyAsText = await response.Content.ReadAsStringAsync();
+             var jResult = JsonConvert.DeserializeObject<JObject>(responseBodyAsText);
+             return (string)jResult[field];
+         }
+
+         return "";
      }
 }
